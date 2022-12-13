@@ -35,6 +35,7 @@ class InputFile(base.TelegramObject):
         :param conf:
         """
         super(InputFile, self).__init__(conf=conf)
+        self.path_or_bytesio = path_or_bytesio
         if isinstance(path_or_bytesio, str):
             # As path
             self._file = open(path_or_bytesio, 'rb')
@@ -49,6 +50,9 @@ class InputFile(base.TelegramObject):
             self._path = path_or_bytesio.resolve()
             if filename is None:
                 filename = path_or_bytesio.name
+        elif isinstance(path_or_bytesio, bytes):
+            self._file = path_or_bytesio
+            self._path = None
         else:
             raise TypeError('Not supported file type.')
 
@@ -62,6 +66,8 @@ class InputFile(base.TelegramObject):
         """
         if not hasattr(self, '_file'):
             return
+        if isinstance( self.path_or_bytesio, bytes):
+            return ''
 
         if inspect.iscoroutinefunction(self._file.close):
             return asyncio.ensure_future(self._file.close())
